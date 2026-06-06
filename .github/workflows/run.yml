@@ -5,7 +5,8 @@ name: arXiv-daily-ai-enhanced
 
 on:
   schedule:
-    - cron: "30 1 * * *"
+    # 北京时间 5:00 = UTC 21:00 (前一天)
+    - cron: "0 21 * * *"
   workflow_dispatch:
 
 
@@ -193,6 +194,15 @@ jobs:
           echo "❌ ERROR: js/data-config.js not found!"
           exit 1
         fi
+
+        # 替换 HTML 文件中的上游仓库链接为当前仓库 / Replace upstream repo links in HTML files
+        echo "替换 HTML 中的仓库链接... / Replacing repository links in HTML..."
+        for html_file in index.html login.html digests.html settings.html; do
+          if [ -f "$html_file" ]; then
+            sed -i "s|https://github.com/dw-dengwei/daily-arXiv-ai-enhanced|https://github.com/$REPO_OWNER/$REPO_NAME|g" "$html_file"
+            echo "✅ 已更新 $html_file 中的仓库链接 / Updated repo links in $html_file"
+          fi
+        done
 
     - name: Commit code changes to main branch
       if: steps.dedup_check.outputs.has_new_content == 'true'
